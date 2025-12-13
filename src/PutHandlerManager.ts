@@ -2,13 +2,7 @@
  * PutHandlerManager - Manages PUT handler registration for paths
  */
 
-import {
-  ServerAPI,
-  PutHandlerInfo,
-  PutOptions,
-  PutHandler,
-  PutResult
-} from './types'
+import { ServerAPI, PutHandlerInfo, PutOptions, PutHandler, PutResult } from './types'
 import { PathManager } from './PathManager'
 
 const SOURCE_LABEL = 'whatif-helper'

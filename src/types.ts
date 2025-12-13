@@ -33,8 +33,9 @@ export interface Plugin {
   registerWithRouter?: (router: any) => void
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface PluginConfig {
-  // Plugin configuration options from schema
+  // Plugin configuration options from schema - extend as needed
 }
 
 // SignalK Delta format

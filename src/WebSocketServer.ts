@@ -58,7 +58,7 @@ export class WebSocketServer {
         try {
           const message: WSMessage = JSON.parse(data.toString())
           this.handleMessage(client, message)
-        } catch (error) {
+        } catch (_error) {
           this.sendError(client, 'Invalid message format')
         }
       })
@@ -68,7 +68,7 @@ export class WebSocketServer {
         this.app.debug(`WhatIfWS: Client ${client.id} disconnected (${this.clients.size} total)`)
       })
 
-      ws.on('error', error => {
+      ws.on('error', (error) => {
         this.app.error(`WhatIfWS: Client ${client.id} error: ${error}`)
         this.clients.delete(client)
       })
@@ -81,7 +81,7 @@ export class WebSocketServer {
       // Only handle upgrades for our specific path
       if (pathname === this.wsPath) {
         this.app.debug(`WhatIfWS: Handling upgrade for ${pathname}`)
-        this.wss!.handleUpgrade(request, socket, head, ws => {
+        this.wss!.handleUpgrade(request, socket, head, (ws) => {
           this.wss!.emit('connection', ws, request)
         })
       }

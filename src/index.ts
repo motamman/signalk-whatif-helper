@@ -36,7 +36,7 @@ module.exports = (app: ServerAPI): Plugin => {
       properties: {}
     }),
 
-    start: async (config: PluginConfig) => {
+    start: async (_config: PluginConfig) => {
       app.debug('Starting What-If Helper plugin')
 
       // Initialize managers
@@ -160,7 +160,9 @@ module.exports = (app: ServerAPI): Plugin => {
 
           // Validate path format (basic SignalK path validation)
           // Segments can be alphanumeric (starting with letter) or purely numeric
-          if (!/^([a-zA-Z][a-zA-Z0-9]*|[0-9]+)(\.([a-zA-Z][a-zA-Z0-9]*|[0-9]+))*$/.test(body.path)) {
+          if (
+            !/^([a-zA-Z][a-zA-Z0-9]*|[0-9]+)(\.([a-zA-Z][a-zA-Z0-9]*|[0-9]+))*$/.test(body.path)
+          ) {
             return res.status(400).json({
               error: 'Invalid path format. Use dot-separated segments (alphanumeric or numeric).'
             })

@@ -89,25 +89,19 @@ export class PathManager {
     if (filter) {
       if (filter.search) {
         const searchLower = filter.search.toLowerCase()
-        filtered = filtered.filter(p =>
-          p.path.toLowerCase().includes(searchLower)
-        )
+        filtered = filtered.filter((p) => p.path.toLowerCase().includes(searchLower))
       }
 
       if (filter.hasValue === true) {
-        filtered = filtered.filter(p =>
-          p.value !== null && p.value !== undefined
-        )
+        filtered = filtered.filter((p) => p.value !== null && p.value !== undefined)
       }
 
       if (filter.hasMeta === true) {
-        filtered = filtered.filter(p => p.meta !== undefined)
+        filtered = filtered.filter((p) => p.meta !== undefined)
       }
 
       if (filter.baseUnit) {
-        filtered = filtered.filter(p =>
-          p.meta?.units === filter.baseUnit
-        )
+        filtered = filtered.filter((p) => p.meta?.units === filter.baseUnit)
       }
     }
 
@@ -156,11 +150,7 @@ export class PathManager {
   /**
    * Recursively extract paths from nested SignalK data
    */
-  private extractPaths(
-    obj: any,
-    currentPath: string,
-    paths: PathInfo[]
-  ): void {
+  private extractPaths(obj: any, currentPath: string, paths: PathInfo[]): void {
     if (obj === null || obj === undefined) {
       return
     }
@@ -245,7 +235,9 @@ export class PathManager {
    * Source is set to provided source, or auto-generated as <original_source>.whatif-helper
    */
   async setValue(path: string, value: any, source?: string): Promise<void> {
-    this.app.debug(`PathManager.setValue called: path=${path}, value=${JSON.stringify(value)}, source=${source}`)
+    this.app.debug(
+      `PathManager.setValue called: path=${path}, value=${JSON.stringify(value)}, source=${source}`
+    )
 
     let sourceLabel: string
 
@@ -274,21 +266,25 @@ export class PathManager {
             }
           }
         }
-      } catch (error) {
+      } catch (_error) {
         this.app.debug(`Could not get original source for ${path}, using default`)
       }
     }
 
     const delta = {
       context: this.selfContext,
-      updates: [{
-        $source: sourceLabel,
-        timestamp: new Date().toISOString(),
-        values: [{
-          path,
-          value
-        }]
-      }]
+      updates: [
+        {
+          $source: sourceLabel,
+          timestamp: new Date().toISOString(),
+          values: [
+            {
+              path,
+              value
+            }
+          ]
+        }
+      ]
     }
 
     this.app.debug(`Sending delta to ${this.selfContext}: ${JSON.stringify(delta)}`)
@@ -297,7 +293,9 @@ export class PathManager {
     // Verify the value was set via HTTP API
     setTimeout(async () => {
       try {
-        const response = await fetch(`http://localhost:3000/signalk/v1/api/vessels/self/${path.replace(/\./g, '/')}`)
+        const response = await fetch(
+          `http://localhost:3000/signalk/v1/api/vessels/self/${path.replace(/\./g, '/')}`
+        )
         if (response.ok) {
           const data = await response.json()
           this.app.debug(`Verification HTTP: ${path} = ${JSON.stringify(data)}`)
@@ -313,11 +311,7 @@ export class PathManager {
   /**
    * Create a new path with initial value and optional metadata
    */
-  async createPath(
-    path: string,
-    value: any,
-    meta?: PathMeta
-  ): Promise<void> {
+  async createPath(path: string, value: any, meta?: PathMeta): Promise<void> {
     this.app.debug(`Creating path ${path} with value: ${JSON.stringify(value)}`)
 
     // Store custom metadata
@@ -332,14 +326,18 @@ export class PathManager {
     if (meta) {
       this.app.handleMessage(PLUGIN_ID, {
         context: this.selfContext,
-        updates: [{
-          $source: SOURCE_LABEL,
-          timestamp: new Date().toISOString(),
-          meta: [{
-            path,
-            value: meta
-          }]
-        }]
+        updates: [
+          {
+            $source: SOURCE_LABEL,
+            timestamp: new Date().toISOString(),
+            meta: [
+              {
+                path,
+                value: meta
+              }
+            ]
+          }
+        ]
       } as any)
     }
   }
