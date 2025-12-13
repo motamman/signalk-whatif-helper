@@ -1,6 +1,6 @@
 {
   "name": "signalk-whatif-helper",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "SignalK webapp for browsing, modifying, and creating paths for testing and simulation",
   "main": "dist/index.js",
   "scripts": {

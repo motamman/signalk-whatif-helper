@@ -1,6 +1,11 @@
 # Source files (dist is published)
 src/
 
+# Large icon files (keep only sizes needed for webapp)
+public/assets/icon_set/icon_256x256.png
+public/assets/icon_set/icon_512x512.png
+public/assets/icon_set/icon_1024x1024.png
+
 # TypeScript config
 tsconfig.json
 
