@@ -84,15 +84,13 @@ function updateEditorDisplay(pathInfo) {
   const sourceInput = document.getElementById('editor-source')
   if (!sourceInput.value && pathInfo.source) {
     let source = pathInfo.source
-    // If source doesn't end with .whatif-helper, suggest it
-    if (!source.endsWith('.whatif-helper')) {
-      // Strip any existing .whatif-helper suffix(es) first
-      while (source.endsWith('.whatif-helper')) {
-        source = source.slice(0, -'.whatif-helper'.length)
-      }
-      source = source + '.whatif-helper'
+    // If source is exactly 'whatif-helper' or ends with '.whatif-helper', keep as-is
+    if (source === 'whatif-helper' || source.endsWith('.whatif-helper')) {
+      sourceInput.value = source
+    } else {
+      // Append .whatif-helper for other sources
+      sourceInput.value = source + '.whatif-helper'
     }
-    sourceInput.value = source
   }
 }
 

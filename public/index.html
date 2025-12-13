@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>What-If Helper</title>
-  <link rel="icon" href="whatif.png" type="image/png">
+  <link rel="icon" href="assets/icon_set/icon_48x48.png" type="image/png">
   <style>
     * {
       box-sizing: border-box;
@@ -14,13 +14,13 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-      background: #f5f5f5;
+      background: #f0e6f5;
       color: #333;
       line-height: 1.5;
     }
 
     .header {
-      background: linear-gradient(135deg, #2c3e50, #34495e);
+      background: linear-gradient(135deg, #6b4c7a, #8b5a9e);
       color: white;
       padding: 1rem 2rem;
       display: flex;
@@ -28,9 +28,27 @@
       gap: 1rem;
     }
 
+    .header-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+    }
+
+    .header-title {
+      display: flex;
+      flex-direction: column;
+    }
+
     .header h1 {
       font-size: 1.5rem;
       font-weight: 500;
+      margin: 0;
+    }
+
+    .header .subtitle {
+      font-size: 0.75rem;
+      opacity: 0.85;
+      font-weight: 300;
     }
 
     .header .status {
@@ -483,7 +501,11 @@
 </head>
 <body>
   <header class="header">
-    <h1>What-If Helper</h1>
+    <img src="assets/icon_set/icon_192x192.png" alt="What-If Helper" class="header-icon">
+    <div class="header-title">
+      <h1>What-If Helper</h1>
+      <span class="subtitle">A dev utility for modifying and creating SignalK paths for testing</span>
+    </div>
     <span class="status disconnected" id="ws-status">Disconnected</span>
   </header>
 

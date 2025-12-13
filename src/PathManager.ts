@@ -265,8 +265,13 @@ export class PathManager {
             while (originalSource.endsWith(whatifSuffix)) {
               originalSource = originalSource.slice(0, -whatifSuffix.length)
             }
-            // Append our plugin identifier once
-            sourceLabel = `${originalSource}.${SOURCE_LABEL}`
+            // If original source is whatif-helper itself or empty, just use whatif-helper
+            if (originalSource === SOURCE_LABEL || originalSource === '') {
+              sourceLabel = SOURCE_LABEL
+            } else {
+              // Append our plugin identifier once
+              sourceLabel = `${originalSource}.${SOURCE_LABEL}`
+            }
           }
         }
       } catch (error) {
