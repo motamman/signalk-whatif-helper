@@ -15,13 +15,21 @@
     "testing",
     "simulation"
   ],
-  "author": "",
+  "author": "Maurice Tamman <maurice@zennora.sv>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/motamman/signalk-whatif-helper.git"
+  },
+  "bugs": {
+    "url": "https://github.com/motamman/signalk-whatif-helper/issues"
+  },
+  "homepage": "https://github.com/motamman/signalk-whatif-helper#readme",
   "signalk-plugin-enabled-by-default": false,
   "signalk": {
     "appSupport": "webapp",
     "displayName": "What-If Helper",
-    "appIcon": "whatif.png"
+    "appIcon": "assets/icon_set/icon_128x128.png"
   },
   "engines": {
     "node": ">=18.0.0"
