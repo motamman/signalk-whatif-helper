@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>What-If Helper</title>
+  <link rel="icon" href="whatif.png" type="image/png">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: #f5f5f5;
+      color: #333;
+      line-height: 1.5;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #2c3e50, #34495e);
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .header h1 {
+      font-size: 1.5rem;
+      font-weight: 500;
+    }
+
+    .header .status {
+      margin-left: auto;
+      font-size: 0.875rem;
+      opacity: 0.8;
+    }
+
+    .header .status.connected {
+      color: #2ecc71;
+    }
+
+    .header .status.disconnected {
+      color: #e74c3c;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      border-bottom: 2px solid #ddd;
+      padding-bottom: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      padding: 0.75rem 1.5rem;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px 8px 0 0;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .tab:hover {
+      background: #f0f0f0;
+    }
+
+    .tab.active {
+      background: #3498db;
+      color: white;
+      border-color: #3498db;
+    }
+
+    .tab-content {
+      display: none;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 1.5rem;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .section {
+      margin-bottom: 1.5rem;
+    }
+
+    .section h2 {
+      font-size: 1.25rem;
+      color: #2c3e50;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #3498db;
+    }
+
+    /* Form elements */
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: #555;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 1rem;
+      transition: border-color 0.2s;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #3498db;
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+
+    button {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+
+    .btn-primary {
+      background: #3498db;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #2980b9;
+    }
+
+    .btn-secondary {
+      background: #95a5a6;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #7f8c8d;
+    }
+
+    .btn-danger {
+      background: #e74c3c;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #c0392b;
+    }
+
+    .btn-success {
+      background: #27ae60;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #219a52;
+    }
+
+    .btn-small {
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+    }
+
+    /* Search and filter */
+    .search-bar {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .search-bar input {
+      flex: 1;
+    }
+
+    .filters {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      background: #f8f9fa;
+      border-radius: 6px;
+    }
+
+    .filter-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .filter-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* Path table */
+    .path-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    .path-table th,
+    .path-table td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+
+    .path-table th {
+      background: #f8f9fa;
+      font-weight: 600;
+      color: #555;
+      position: sticky;
+      top: 0;
+    }
+
+    .path-table tr:hover {
+      background: #f0f7ff;
+    }
+
+    .path-table tr.selected {
+      background: #d5e9f7;
+    }
+
+    .path-table .path-cell {
+      font-family: 'Monaco', 'Consolas', monospace;
+      color: #2c3e50;
+      cursor: pointer;
+    }
+
+    .path-table .value-cell {
+      font-family: 'Monaco', 'Consolas', monospace;
+      color: #16a085;
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .path-table .source-cell {
+      color: #7f8c8d;
+      font-size: 0.8rem;
+    }
+
+    .table-container {
+      max-height: 500px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+    }
+
+    /* Editor panel */
+    .editor-panel {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 900px) {
+      .editor-panel {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .current-value {
+      padding: 1rem;
+      background: #f8f9fa;
+      border-radius: 6px;
+      font-family: 'Monaco', 'Consolas', monospace;
+      word-break: break-all;
+    }
+
+    .meta-info {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #e8f4fd;
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+
+    .meta-info dt {
+      font-weight: 600;
+      color: #555;
+    }
+
+    .meta-info dd {
+      margin-bottom: 0.5rem;
+      color: #333;
+    }
+
+    /* PUT handlers list */
+    .handler-list {
+      list-style: none;
+    }
+
+    .handler-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      background: #f8f9fa;
+      border-radius: 6px;
+      margin-bottom: 0.5rem;
+    }
+
+    .handler-path {
+      font-family: 'Monaco', 'Consolas', monospace;
+      color: #2c3e50;
+    }
+
+    .handler-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    /* Live indicator */
+    .live-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.25rem 0.75rem;
+      background: #d5f5e3;
+      color: #27ae60;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .live-indicator::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background: #27ae60;
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Status message */
+    .status-message {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      color: white;
+      font-weight: 500;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 1000;
+    }
+
+    .status-message.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .status-message.success {
+      background: #27ae60;
+    }
+
+    .status-message.error {
+      background: #e74c3c;
+    }
+
+    .status-message.info {
+      background: #3498db;
+    }
+
+    /* Checkbox styling */
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: auto;
+    }
+
+    /* Badge */
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-put {
+      background: #d5f5e3;
+      color: #27ae60;
+    }
+
+    .badge-created {
+      background: #fef5e7;
+      color: #f39c12;
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: #7f8c8d;
+    }
+
+    .empty-state p {
+      margin-top: 0.5rem;
+    }
+
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: #7f8c8d;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #f0f0f0;
+      border-top-color: #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Two column layout for create form */
+    .create-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .create-form {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .create-form .full-width {
+      grid-column: 1 / -1;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>What-If Helper</h1>
+    <span class="status disconnected" id="ws-status">Disconnected</span>
+  </header>
+
+  <div class="container">
+    <div class="tabs">
+      <div class="tab active" data-tab="paths">Path Browser</div>
+      <div class="tab" data-tab="editor">Value Editor</div>
+      <div class="tab" data-tab="create">Create Path</div>
+      <div class="tab" data-tab="puts">PUT Handlers</div>
+    </div>
+
+    <!-- Path Browser Tab -->
+    <div class="tab-content active" id="tab-paths">
+      <div class="section">
+        <h2>Browse SignalK Paths</h2>
+
+        <div class="search-bar">
+          <input type="text" id="path-search" placeholder="Search paths...">
+          <button class="btn-primary" id="refresh-paths">Refresh</button>
+        </div>
+
+        <div class="filters">
+          <div class="filter-item">
+            <input type="checkbox" id="filter-has-value">
+            <label for="filter-has-value">Has value</label>
+          </div>
+          <div class="filter-item">
+            <input type="checkbox" id="filter-has-meta">
+            <label for="filter-has-meta">Has metadata</label>
+          </div>
+          <div class="filter-item">
+            <label for="filter-unit">Unit:</label>
+            <select id="filter-unit">
+              <option value="">All units</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="path-table">
+            <thead>
+              <tr>
+                <th>Path</th>
+                <th>Value</th>
+                <th>Units</th>
+                <th>Source</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="paths-table-body">
+              <tr>
+                <td colspan="5" class="loading">
+                  <div class="spinner"></div>
+                  Loading paths...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="margin-top: 0.5rem; display: flex; align-items: center; gap: 1rem;">
+          <span style="color: #7f8c8d; font-size: 0.9rem;">
+            <span id="path-count">0</span> paths
+          </span>
+          <div>
+            <button class="btn-small btn-secondary" id="prev-page" style="display: none;">&lt; Prev</button>
+            <button class="btn-small btn-secondary" id="next-page" style="display: none;">Next &gt;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Value Editor Tab -->
+    <div class="tab-content" id="tab-editor">
+      <div class="section">
+        <h2>Edit Path Value</h2>
+
+        <div id="editor-empty" class="empty-state">
+          <h3>No path selected</h3>
+          <p>Select a path from the Path Browser to edit its value.</p>
+        </div>
+
+        <div id="editor-content" style="display: none;">
+          <div class="editor-panel">
+            <div>
+              <div class="form-group">
+                <label>Selected Path</label>
+                <input type="text" id="editor-path" readonly>
+              </div>
+
+              <div class="form-group">
+                <label>Current Value <span class="live-indicator" id="live-indicator">Live</span></label>
+                <div class="current-value" id="editor-current-value">-</div>
+              </div>
+
+              <div id="editor-meta" class="meta-info" style="display: none;">
+                <dl>
+                  <dt>Units</dt>
+                  <dd id="meta-units">-</dd>
+                  <dt>Description</dt>
+                  <dd id="meta-description">-</dd>
+                </dl>
+              </div>
+            </div>
+
+            <div>
+              <div class="form-group">
+                <label for="editor-new-value">New Value</label>
+                <input type="text" id="editor-new-value" placeholder="Enter new value">
+                <small style="color: #7f8c8d;">Enter number, string, true/false, or JSON object</small>
+              </div>
+
+              <div class="form-group">
+                <label for="editor-source">Source ($source)</label>
+                <input type="text" id="editor-source" placeholder="e.g. mqtt-salonTanks.whatif-helper">
+                <small style="color: #7f8c8d;">Leave empty to auto-generate from current source</small>
+              </div>
+
+              <div class="form-group">
+                <button class="btn-primary" id="btn-set-value">Set Value</button>
+                <button class="btn-success" id="btn-put-value" style="display: none;">PUT Value</button>
+              </div>
+
+              <div class="form-group" id="put-status" style="display: none;">
+                <span class="badge badge-put">PUT enabled</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create Path Tab -->
+    <div class="tab-content" id="tab-create">
+      <div class="section">
+        <h2>Create New Path</h2>
+
+        <form id="create-form" class="create-form">
+          <div class="form-group">
+            <label for="create-path">Path *</label>
+            <input type="text" id="create-path" placeholder="e.g. custom.simulation.value" required>
+            <small style="color: #7f8c8d;">Use dot-separated segments (e.g. navigation.custom.speed)</small>
+          </div>
+
+          <div class="form-group">
+            <label for="create-value">Initial Value *</label>
+            <input type="text" id="create-value" placeholder="Enter value" required>
+            <small style="color: #7f8c8d;">Number, string, true/false, or JSON</small>
+          </div>
+
+          <div class="form-group">
+            <label for="create-unit">Base Unit</label>
+            <select id="create-unit">
+              <option value="">No unit (dimensionless)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="create-description">Description</label>
+            <input type="text" id="create-description" placeholder="Optional description">
+          </div>
+
+          <div class="form-group full-width">
+            <div class="checkbox-group">
+              <input type="checkbox" id="create-enable-put">
+              <label for="create-enable-put">Enable PUT handler (allow external value updates)</label>
+            </div>
+          </div>
+
+          <div class="form-group full-width">
+            <button type="submit" class="btn-primary">Create Path</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- PUT Handlers Tab -->
+    <div class="tab-content" id="tab-puts">
+      <div class="section">
+        <h2>PUT Handler Configuration</h2>
+
+        <p style="margin-bottom: 1rem; color: #555;">
+          PUT handlers allow external applications to update values via SignalK PUT requests.
+        </p>
+
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+          <label>Register PUT Handler for Path</label>
+          <div style="display: flex; gap: 0.5rem;">
+            <input type="text" id="put-path-input" placeholder="e.g. navigation.custom.value" style="flex: 1;">
+            <button class="btn-success" id="btn-register-put">Register</button>
+          </div>
+        </div>
+
+        <h3 style="font-size: 1rem; color: #555; margin-bottom: 0.75rem;">Registered Handlers</h3>
+
+        <ul class="handler-list" id="put-handlers-list">
+          <li class="empty-state">
+            <p>No PUT handlers registered</p>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="status-message" id="status-message"></div>
+
+  <!-- JavaScript modules -->
+  <script src="js/app-state.js"></script>
+  <script src="js/app-utils.js"></script>
+  <script src="js/app-api.js"></script>
+  <script src="js/app-paths.js"></script>
+  <script src="js/app-editor.js"></script>
+  <script src="js/app-create.js"></script>
+  <script src="js/app-puts.js"></script>
+  <script src="js/app-main.js"></script>
+</body>
+</html>

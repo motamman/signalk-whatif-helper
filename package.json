@@ -1,0 +1,42 @@
+{
+  "name": "signalk-whatif-helper",
+  "version": "0.1.0",
+  "description": "SignalK webapp for browsing, modifying, and creating paths for testing and simulation",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc -w",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "signalk",
+    "signalk-node-server-plugin",
+    "signalk-webapp",
+    "testing",
+    "simulation"
+  ],
+  "author": "",
+  "license": "MIT",
+  "signalk-plugin-enabled-by-default": false,
+  "signalk": {
+    "appSupport": "webapp",
+    "displayName": "What-If Helper",
+    "appIcon": "whatif.png"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@signalk/server-api": "^2.0.0",
+    "@types/express": "^5.0.6",
+    "@types/node": "^20.0.0",
+    "@types/ws": "^8.5.10",
+    "typescript": "^5.3.0"
+  },
+  "peerDependencies": {
+    "@signalk/server-api": "^2.0.0"
+  },
+  "dependencies": {
+    "ws": "^8.16.0"
+  }
+}
