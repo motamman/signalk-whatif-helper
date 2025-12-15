@@ -18,6 +18,7 @@ import {
 import { PathManager } from './PathManager'
 import { PutHandlerManager } from './PutHandlerManager'
 import { WebSocketServer } from './WebSocketServer'
+import { ResourceManager, WhatIfScenario } from './ResourceManager'
 
 const PLUGIN_ID = 'signalk-whatif-helper'
 
@@ -25,6 +26,7 @@ module.exports = (app: ServerAPI): Plugin => {
   let pathManager: PathManager
   let putHandlerManager: PutHandlerManager
   let wsServer: WebSocketServer
+  let resourceManager: ResourceManager
 
   const plugin: Plugin = {
     id: PLUGIN_ID,
@@ -43,6 +45,7 @@ module.exports = (app: ServerAPI): Plugin => {
       pathManager = new PathManager(app)
       putHandlerManager = new PutHandlerManager(app, pathManager)
       wsServer = new WebSocketServer(app, pathManager)
+      resourceManager = new ResourceManager(app)
 
       // Get the HTTP server for WebSocket
       const server = (app as any).server || (app as any)._server
@@ -319,6 +322,168 @@ module.exports = (app: ServerAPI): Plugin => {
         } catch (error) {
           app.error(`Error listing created paths: ${error}`)
           res.status(500).json({ error: 'Failed to list created paths' })
+        }
+      })
+
+      // ============================================
+      // SCENARIO ROUTES
+      // ============================================
+
+      /**
+       * GET /scenarios - List all saved scenarios
+       */
+      router.get('/scenarios', async (req: Request, res: Response) => {
+        try {
+          if (!resourceManager.isAvailable()) {
+            return res.status(503).json({ error: 'Resources API not available' })
+          }
+          const scenarios = await resourceManager.listScenarios()
+          res.json(scenarios)
+        } catch (error) {
+          app.error(`Error listing scenarios: ${error}`)
+          res.status(500).json({ error: 'Failed to list scenarios' })
+        }
+      })
+
+      /**
+       * GET /scenarios/:id - Get a specific scenario
+       */
+      router.get('/scenarios/:id', async (req: Request, res: Response) => {
+        try {
+          if (!resourceManager.isAvailable()) {
+            return res.status(503).json({ error: 'Resources API not available' })
+          }
+          const scenario = await resourceManager.getScenario(req.params.id)
+          if (!scenario) {
+            return res.status(404).json({ error: 'Scenario not found' })
+          }
+          res.json(scenario)
+        } catch (error) {
+          app.error(`Error getting scenario: ${error}`)
+          res.status(500).json({ error: 'Failed to get scenario' })
+        }
+      })
+
+      /**
+       * POST /scenarios - Save a new scenario
+       */
+      router.post('/scenarios', async (req: Request, res: Response) => {
+        try {
+          if (!resourceManager.isAvailable()) {
+            return res.status(503).json({ error: 'Resources API not available' })
+          }
+
+          const body: WhatIfScenario = req.body
+
+          if (!body.name) {
+            return res.status(400).json({ error: 'Scenario name is required' })
+          }
+          if (!body.paths || !Array.isArray(body.paths) || body.paths.length === 0) {
+            return res.status(400).json({ error: 'At least one path is required' })
+          }
+
+          const id = await resourceManager.saveScenario(body)
+          res.status(201).json({ id, ...body })
+        } catch (error) {
+          app.error(`Error saving scenario: ${error}`)
+          res.status(500).json({ error: 'Failed to save scenario' })
+        }
+      })
+
+      /**
+       * PUT /scenarios/:id - Update a scenario
+       */
+      router.put('/scenarios/:id', async (req: Request, res: Response) => {
+        try {
+          if (!resourceManager.isAvailable()) {
+            return res.status(503).json({ error: 'Resources API not available' })
+          }
+
+          await resourceManager.updateScenario(req.params.id, req.body)
+          const updated = await resourceManager.getScenario(req.params.id)
+          res.json(updated)
+        } catch (error) {
+          app.error(`Error updating scenario: ${error}`)
+          res.status(500).json({ error: 'Failed to update scenario' })
+        }
+      })
+
+      /**
+       * DELETE /scenarios/:id - Delete a scenario
+       */
+      router.delete('/scenarios/:id', async (req: Request, res: Response) => {
+        try {
+          if (!resourceManager.isAvailable()) {
+            return res.status(503).json({ error: 'Resources API not available' })
+          }
+
+          const success = await resourceManager.deleteScenario(req.params.id)
+          if (!success) {
+            return res.status(404).json({ error: 'Scenario not found' })
+          }
+          res.status(204).send()
+        } catch (error) {
+          app.error(`Error deleting scenario: ${error}`)
+          res.status(500).json({ error: 'Failed to delete scenario' })
+        }
+      })
+
+      /**
+       * POST /scenarios/:id/run - Run a saved scenario (apply all paths)
+       */
+      router.post('/scenarios/:id/run', async (req: Request, res: Response) => {
+        try {
+          if (!resourceManager.isAvailable()) {
+            return res.status(503).json({ error: 'Resources API not available' })
+          }
+
+          const scenario = await resourceManager.getScenario(req.params.id)
+          if (!scenario) {
+            return res.status(404).json({ error: 'Scenario not found' })
+          }
+
+          app.debug(`Running scenario "${scenario.name}" with ${scenario.paths.length} paths`)
+
+          // Apply all paths in the scenario
+          const results: {
+            path: string
+            success: boolean
+            putRegistered?: boolean
+            error?: string
+          }[] = []
+
+          for (const pathConfig of scenario.paths) {
+            app.debug(`Applying path: ${pathConfig.path} = ${JSON.stringify(pathConfig.value)}`)
+            try {
+              await pathManager.createPath(pathConfig.path, pathConfig.value, pathConfig.meta)
+
+              // Register PUT handler if specified
+              let putRegistered = false
+              if (pathConfig.enablePut && !putHandlerManager.hasPutHandler(pathConfig.path)) {
+                putHandlerManager.registerHandler(pathConfig.path, { acceptAllSources: true })
+                putRegistered = true
+              }
+
+              results.push({ path: pathConfig.path, success: true, putRegistered })
+            } catch (err) {
+              results.push({
+                path: pathConfig.path,
+                success: false,
+                error: String(err)
+              })
+            }
+          }
+
+          res.json({
+            scenario: scenario.name,
+            applied: results.filter((r) => r.success).length,
+            failed: results.filter((r) => !r.success).length,
+            putsRegistered: results.filter((r) => r.putRegistered).length,
+            results
+          })
+        } catch (error) {
+          app.error(`Error running scenario: ${error}`)
+          res.status(500).json({ error: 'Failed to run scenario' })
         }
       })
 

@@ -360,6 +360,59 @@
       gap: 0.5rem;
     }
 
+    /* Scenarios */
+    .scenarios-list {
+      margin-bottom: 1.5rem;
+    }
+
+    .scenario-item {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 1rem;
+      background: #f8f9fa;
+      border-radius: 6px;
+      margin-bottom: 0.75rem;
+      border-left: 3px solid #8b5a9e;
+    }
+
+    .scenario-info {
+      flex: 1;
+    }
+
+    .scenario-name {
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 0.25rem;
+    }
+
+    .scenario-meta {
+      font-size: 0.75rem;
+      color: #666;
+      margin-bottom: 0.25rem;
+    }
+
+    .scenario-description {
+      font-size: 0.875rem;
+      color: #555;
+      margin-top: 0.5rem;
+    }
+
+    .scenario-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-shrink: 0;
+      margin-left: 1rem;
+    }
+
+    .warning {
+      color: #856404;
+      background: #fff3cd;
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      border: 1px solid #ffeeba;
+    }
+
     /* Live indicator */
     .live-indicator {
       display: inline-flex;
@@ -515,6 +568,7 @@
       <div class="tab" data-tab="editor">Value Editor</div>
       <div class="tab" data-tab="create">Create Path</div>
       <div class="tab" data-tab="puts">PUT Handlers</div>
+      <div class="tab" data-tab="scenarios">Scenarios</div>
     </div>
 
     <!-- Path Browser Tab -->
@@ -676,6 +730,21 @@
           </div>
 
           <div class="form-group full-width">
+            <div class="checkbox-group">
+              <input type="checkbox" id="create-add-to-scenario">
+              <label for="create-add-to-scenario">Add to scenario</label>
+            </div>
+          </div>
+
+          <div class="form-group full-width scenario-options" id="scenario-options" style="display: none;">
+            <label for="create-scenario-select">Select Scenario</label>
+            <select id="create-scenario-select">
+              <option value="__new__">(Create new scenario)</option>
+            </select>
+            <input type="text" id="create-scenario-name" placeholder="New scenario name" style="margin-top: 0.5rem; display: none;">
+          </div>
+
+          <div class="form-group full-width">
             <button type="submit" class="btn-primary">Create Path</button>
           </div>
         </form>
@@ -708,6 +777,51 @@
         </ul>
       </div>
     </div>
+
+    <!-- Scenarios Tab -->
+    <div class="tab-content" id="tab-scenarios">
+      <div class="section">
+        <h2>Saved Scenarios</h2>
+        <p style="margin-bottom: 1rem; color: #555;">
+          Save and replay what-if scenarios. Scenarios are stored using SignalK's Resources API.
+        </p>
+
+        <div id="scenarios-list" class="scenarios-list">
+          <p>Loading scenarios...</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 id="scenario-form-title">Save New Scenario</h2>
+        <form id="save-scenario-form">
+          <div class="form-group">
+            <label for="scenario-name">Scenario Name *</label>
+            <input type="text" id="scenario-name" placeholder="e.g. Low fuel test" required>
+          </div>
+
+          <div class="form-group">
+            <label for="scenario-description">Description</label>
+            <input type="text" id="scenario-description" placeholder="Optional description">
+          </div>
+
+          <div class="form-group">
+            <label for="scenario-paths">Paths (one per line)</label>
+            <textarea id="scenario-paths" rows="8" placeholder="# Format: path: value [units=unit] [PUT]
+tanks.fuel.0.currentLevel: 0.1 units=ratio PUT
+navigation.speedOverGround: 5.14 units=m/s
+environment.outside.temperature: 293.15 units=K description=&quot;Ambient temp&quot;
+custom.switch.state: true units=bool PUT
+# Lines starting with # are ignored"></textarea>
+            <small>Options: <code>units=xxx</code> (set unit), <code>PUT</code> (enable PUT handler), <code>description="text"</code></small>
+          </div>
+
+          <div style="display: flex; gap: 0.5rem;">
+            <button type="submit" class="btn-success">Save Scenario</button>
+            <button type="button" class="btn-secondary" id="cancel-edit-btn" style="display: none;" onclick="cancelEdit()">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 
   <div class="status-message" id="status-message"></div>
@@ -720,6 +834,7 @@
   <script src="js/app-editor.js"></script>
   <script src="js/app-create.js"></script>
   <script src="js/app-puts.js"></script>
+  <script src="js/app-scenarios.js"></script>
   <script src="js/app-main.js"></script>
 </body>
 </html>

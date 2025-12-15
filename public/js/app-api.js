@@ -161,3 +161,107 @@ async function fetchUnits() {
 
   return response.json()
 }
+
+// ============================================
+// SCENARIO API FUNCTIONS
+// ============================================
+
+/**
+ * Fetch all saved scenarios
+ */
+async function fetchScenarios() {
+  const response = await fetch(`${API_BASE}/scenarios`)
+
+  if (!response.ok) {
+    if (response.status === 503) {
+      return { unavailable: true, scenarios: [] }
+    }
+    throw new Error(`Failed to fetch scenarios: ${response.statusText}`)
+  }
+
+  return response.json()
+}
+
+/**
+ * Fetch a specific scenario
+ */
+async function fetchScenario(id) {
+  const response = await fetch(`${API_BASE}/scenarios/${encodeURIComponent(id)}`)
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      return null
+    }
+    throw new Error(`Failed to fetch scenario: ${response.statusText}`)
+  }
+
+  return response.json()
+}
+
+/**
+ * Save a new scenario
+ */
+async function saveScenario(name, description, paths) {
+  const response = await fetch(`${API_BASE}/scenarios`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, description, paths, createdAt: new Date().toISOString() })
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: response.statusText }))
+    throw new Error(error.error || 'Failed to save scenario')
+  }
+
+  return response.json()
+}
+
+/**
+ * Update a scenario
+ */
+async function updateScenario(id, updates) {
+  const response = await fetch(`${API_BASE}/scenarios/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(updates)
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: response.statusText }))
+    throw new Error(error.error || 'Failed to update scenario')
+  }
+
+  return response.json()
+}
+
+/**
+ * Delete a scenario
+ */
+async function deleteScenario(id) {
+  const response = await fetch(`${API_BASE}/scenarios/${encodeURIComponent(id)}`, {
+    method: 'DELETE'
+  })
+
+  if (!response.ok && response.status !== 204) {
+    const error = await response.json().catch(() => ({ error: response.statusText }))
+    throw new Error(error.error || 'Failed to delete scenario')
+  }
+
+  return true
+}
+
+/**
+ * Run a saved scenario
+ */
+async function runScenario(id) {
+  const response = await fetch(`${API_BASE}/scenarios/${encodeURIComponent(id)}/run`, {
+    method: 'POST'
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: response.statusText }))
+    throw new Error(error.error || 'Failed to run scenario')
+  }
+
+  return response.json()
+}

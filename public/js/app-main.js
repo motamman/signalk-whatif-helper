@@ -121,12 +121,14 @@ async function init() {
   setupEditor()
   setupCreateForm()
   setupPutHandlers()
+  setupScenarios()
 
   // Load initial data
   await Promise.all([
     loadPaths(),
     loadPutHandlers(),
-    loadUnits()
+    loadUnits(),
+    loadScenarios()
   ])
 
   // Populate unit filter
